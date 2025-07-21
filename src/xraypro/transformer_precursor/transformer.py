@@ -76,18 +76,18 @@ class Transformer(nn.Module):
         # self.encoder.weight.data.uniform_(-initrange, initrange)
         nn.init.xavier_normal_(self.token_encoder.weight)
 
-    def forward(self, src: Tensor) -> Tensor:
+    def forward(self, src: Tensor, src_key_padding_mask: Tensor = None) -> Tensor:
         """
         Args:
             src: Tensor, shape [seq_len, batch_size]
-            src_mask: Tensor, shape [seq_len, seq_len]
+            src_key_padding_mask: Tensor, shape [batch_size, seq_len], optional (True for padded tokens to ignore)
 
         Returns:
-            output Tensor of shape [seq_len, batch_size, ntoken]
+            output Tensor of shape [batch_size, seq_len, d_model]
         """
         src = self.token_encoder(src) * math.sqrt(self.d_model)
         src = self.pos_encoder(src)
-        output = self.transformer_encoder(src)
+        output = self.transformer_encoder(src, src_key_padding_mask=src_key_padding_mask)
         #output = output[:, 0:1, :] #this was added in by me
 
         #return output.squeeze(dim = 1) #this was added in by me
